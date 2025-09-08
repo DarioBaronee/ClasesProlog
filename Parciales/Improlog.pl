@@ -44,21 +44,6 @@ seDestaca(Persona,Grupo) :- distinct(Grupo,(
 grupo(vientosDelEste,bigband).
 grupo(sophieTrio,formacion([contrabajo,guitarra,violin])).
 grupo(jazzmin,formacion([bateria,bajo,guitarra,violin])).
-/*
-hayCupo(Instrumento,Grupo) :-
-    instrumento(Instrumento,_),
-    grupo(Grupo,bigband),
-    (instrumento(Instrumento,melodico(viento)) ;(   
-        member(Instrumento,[bateria,bajo,piano]),
-        not(integrante(Grupo,_,Instrumento))
-    )).
-
-hayCupo(Instrumento,Grupo) :-
-    instrumento(Instrumento,_),
-    not(integrante(Grupo,_,Instrumento)),
-    grupo(Grupo,formacion(Instrumentos)),
-    member(Instrumento,Instrumentos).
-*/
 
 %Excepcion con melodicos de viento en bigbands
 hayCupo(Instrumento,Grupo) :-
@@ -78,3 +63,34 @@ sirvePara(Instrumento,bigband) :-
 
 sirvePara(Instrumento,formacion(Instrumentos)) :-
     member(Instrumento,Instrumentos).
+
+%Punto 5
+puedeIncorporarse(Persona,Instrumento,Grupo) :-
+    not(integrante(Grupo,Persona,_)),
+    hayCupo(Instrumento,Grupo),
+    grupo(Grupo,TipoGrupo),
+    nivelQueTiene(Persona,Instrumento,Nivel),
+    nivelRequerido(TipoGrupo,Nivel).
+
+nivelRequerido(bigband, Nivel) :-
+    Nivel >= 1.
+
+nivelRequerido(formacion(Instrumentos), Nivel) :-
+    length(Instrumentos,CantidadInstrumentos),
+    Nivel >= 7 - CantidadInstrumentos.
+
+%Punto 6
+
+quedoEnBanda(Persona) :- distinct(Persona,(
+    nivelQueTiene(Persona,_,_),     %la persona existe
+    not(integrante(_,Persona,_)),   %no es integrante de ningun grupo
+    %No existe instrumento en el cual pueda incorporarse a un grupo cualquiera
+    not((
+        nivelQueTiene(Persona,Instrumento,_), 
+        puedeIncorporarse(Persona,Instrumento,_))))).
+/*
+quedoEnBanda(Persona) :-
+    nivelQueTiene(Persona, _, _),              % la persona existe
+    not(integrante(_, Persona, _)),            % no está en ningún grupo
+    forall(nivelQueTiene(Persona,Instrumento,_),not(puedeIncorporarse(Persona,Instrumento,_))).
+*/
